@@ -63,6 +63,7 @@ inVal="""4 BFNQL => 9 LMCRF
 9 FZXS => 7 VRVGB
 7 WZMRW, 1 TBVH, 1 VFLNM, 8 CNQW, 15 LZHZ, 25 PCRQV, 2 BRGXB => 4 WTZX"""
 
+
 inVal=inVal.split("\n")
 
 reactions=[]
@@ -76,23 +77,58 @@ for i in range(len(inVal)):
     output=[int(tmp1[0]),tmp1[1]]
     reactions.append([inputs,output])
 
-required=[[1,"FUEL"]]
-oreReq=0
-while(len(required)>0):
-    toFind=required[0]
+
+
+tree=[["ORE",0]]
+curNode=0
+while(curNode<len(tree)):
+    toFind=tree[curNode][0]
     for i in range(len(reactions)):
-        if(reactions[i][1][1]==toFind[1]):
-            if(reactions[i][0][0][1]=="ORE"):
-                oreReq+=reactions[i][0][0][0]*math.ceil(toFind[0]/reactions[i][1][0])
-            else:
-                tmp=reactions[i][0]
-                for j in range(len(tmp)):
-                    tmp[j][0]=tmp[j][0]*math.ceil(toFind[0]/reactions[i][1][0])
-                required.extend(tmp)
-    del(required[0])
-                
+        for j in range(len(reactions[i][0])):
+            if(toFind==reactions[i][0][j][1]):
+                maxDepth=0
+                for k in range(len(reactions[i][0])):
+                    valid=0
+                    for l in range(len(tree)):
+                        if(tree[l][0]==reactions[i][0][k][1]):
+                            valid=1
+                            maxDepth=max(maxDepth,tree[l][1])
+                    if(valid==0):
+                        break
+                for k in range(len(tree)):
+                    if(reactions[i][1][1]==tree[k][0]):
+                        valid=0
+                        break
+                if(valid==1):
+                    tree.append([reactions[i][1][1],maxDepth+1])
+    curNode+=1
 
+def sortingFunc(a):
+    return -a[1]
 
-    
+tree=sorted(tree,key=sortingFunc)                                
+print(tree)
 
-    
+pathing=[["FUEL",1]]
+index=0
+for index in range(len(tree)):
+    toFind=tree[index][0]
+    for i in range(len(pathing)):
+        if(pathing[i][0]==toFind):
+            numReq=pathing[i][1]
+            for j in range(len(reactions)):
+                if(reactions[j][1][1]==toFind):
+                    multi=math.ceil(numReq/reactions[j][1][0])
+                    for reactant in reactions[j][0]:
+                        inPathing=0
+                        for k in range(len(pathing)):
+                            if(pathing[k][0]==reactant[1]):
+                                inPathing=1
+                                pathing[k][1]+=reactant[0]*multi
+                        if(inPathing==0):
+                            pathing.append([reactant[1],reactant[0]*multi])
+                    
+        
+
+                                        
+
